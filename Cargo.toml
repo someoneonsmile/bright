@@ -1,0 +1,33 @@
+[package]
+name = "bright"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+tokio = {version = "1", features = ["rt", "time", "macros"]}
+
+brightness = {version = "0"}
+
+futures = {version = "0"}
+
+lazy_static = {version = "1"}
+
+chrono = {version = "0"}
+
+anyhow = {version = "1"}
+
+
+[profile.release]
+
+opt-level = "s"
+
+lto = true
+
+panic = "abort"
+
+# options["none", "debuginfo", "symbols", true, false]
+# the default is "none", true = "symbols", false = "none"
+strip = true
