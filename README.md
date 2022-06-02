@@ -7,3 +7,8 @@
 - [ ] config file
 - [ ] 指定时间点, 不是区间
 - [ ] 为多个显示器单独指定亮度
+
+
+## todo
+
+- [ ] readme  config file format
