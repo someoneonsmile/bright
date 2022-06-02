@@ -11,7 +11,10 @@ mod util;
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> anyhow::Result<()> {
+    // get device info
     let dev_map = get_dev_map().await?;
+
+    // get config
     let config_path = "${XDG_CONFIG:-~/.config}/bright/config.toml";
     let config = config::Config::from_toml(config_path)?.ok_or_else(|| {
         anyhow::anyhow!(format!("can't not find the config file {}", config_path))
@@ -24,10 +27,14 @@ async fn main() -> anyhow::Result<()> {
     futures::stream::iter(dev_map.into_iter())
         .map(Ok)
         .try_for_each_concurrent(None, |(dev_name, dev)| async {
-            let dev_config = config.dev.get(&dev_name).ok_or_else(|| {
-                anyhow::anyhow!(format!("can't find the config for device: {}", dev_name))
-            })?;
-            set_brightnes(dev_name, dev, dev_config).await?;
+            match config.dev.get(&dev_name) {
+                Some(dev_config) => {
+                    set_brightnes(dev_name, dev, dev_config).await?;
+                }
+                _ => {
+                    eprintln!("can't find config for {}", dev_name);
+                }
+            }
             Ok(()) as anyhow::Result<()>
         })
         .await?;
