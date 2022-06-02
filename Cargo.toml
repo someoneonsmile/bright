@@ -13,12 +13,17 @@ brightness = {version = "0"}
 
 futures = {version = "0"}
 
-lazy_static = {version = "1"}
-
-chrono = {version = "0"}
+chrono = {version = "0", features = ["serde"]}
 
 anyhow = {version = "1"}
 
+serde = {version = "1", features = ["derive"] }
+
+toml = "0"
+
+shellexpand = "2"
+
+# lazy_static = {version = "1"}
 
 [profile.release]
 
