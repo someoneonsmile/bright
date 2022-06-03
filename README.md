@@ -10,16 +10,17 @@
 
 ## Config
 
-### config file locations
+### Locations
 
 - `$XDG_CONFIG_HOME/bright/config.toml`
 - `$HOME/.config/bright/config.toml`
 
-### config file format
+### Format
 
 ```toml
 
-[dev.'intel_backlight']
+# ex: [dev.'intel_backlight']
+[dev.'{device_name}']
 
 time_bright = [
   { time = '08:00:00', bright = 30 },
