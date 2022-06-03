@@ -15,7 +15,7 @@ async fn main() -> anyhow::Result<()> {
     let dev_map = get_dev_map().await?;
 
     // get config
-    let config_path = "${XDG_CONFIG:-~/.config}/bright/config.toml";
+    let config_path = "${XDG_CONFIG_HOME:-~/.config}/bright/config.toml";
     let config = config::Config::from_toml(config_path)?.ok_or_else(|| {
         anyhow::anyhow!(format!("can't not find the config file {}", config_path))
     })?;
