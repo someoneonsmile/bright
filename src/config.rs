@@ -31,7 +31,10 @@ impl Config {
             return Ok(None);
         }
         let config_str = fs::read_to_string(config_path)?;
-        let config: Config = toml::from_str(&config_str)?;
+        let mut config: Config = toml::from_str(&config_str)?;
+        for (_, dev) in config.dev.iter_mut() {
+            dev.time_bright.sort_by_key(|it| it.time)
+        }
         Ok(Some(config))
     }
 }
