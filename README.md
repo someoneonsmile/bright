@@ -27,6 +27,15 @@ time_bright = [
   { time = '10:00:00', bright = 60 },
 ]
 
+# interval tick (unit ms)
+interval = 200
+
+# type = Brust, interval_percent is required.
+#   fast convert to target and then sleep to next timeline point
+# type = Line.
+#   convert to target, use the time between pre timeline point and next timeline point
+
+transition = {type = "{Brust/Line}", interval_percent = 10}
 ```
 
 ## Todo

@@ -61,11 +61,11 @@ async fn set_brightnes(
     mut dev: BrightnessDevice,
     dev_config: &config::DeviceConfig,
 ) -> anyhow::Result<()> {
-    let mut interval = time::interval(std::time::Duration::from_millis(200));
+    let mut interval = time::interval(std::time::Duration::from_millis(dev_config.interval as u64));
     interval.set_missed_tick_behavior(MissedTickBehavior::Skip);
     loop {
         interval.tick().await;
-        let target = get_target_brightness(dev_config);
+        let target = dev_config.get_target().map(|it| it.bright);
         // set_brightnes().await?;
         if let Some(target) = target {
             let cur_value = dev.get().await?;
@@ -81,9 +81,11 @@ async fn set_brightnes(
                     time::sleep(sleep_duration.to_std()?).await;
                 }
                 _ => {
-                    let brightness = calc_next_bright(cur_value, target);
+                    let brightness = dev_config
+                        .calc_next_val(cur_value)
+                        .ok_or_else(|| anyhow::anyhow!("can't calc the next bright"))?;
                     println!(
-                        "Brightness of device {}, current={}%, target={}%, set={}%",
+                        "Brightness of device {}, current={}%, target={}% set={}%",
                         dev_name, cur_value, target, brightness
                     );
                     dev.set(brightness).await?;
@@ -101,31 +103,10 @@ async fn show_brightnes(dev_map: &HashMap<String, BrightnessDevice>) -> anyhow::
     Ok(())
 }
 
-fn get_target_brightness(dev_config: &DeviceConfig) -> Option<u32> {
-    let now = Local::now().time();
-    dev_config
-        .time_bright
-        .iter()
-        .rfind(|it| it.time < now)
-        .or_else(|| dev_config.time_bright.last())
-        .map(|it| it.bright)
-}
-
+#[inline]
 fn get_next_wake_time(dev_config: &DeviceConfig) -> anyhow::Result<NaiveTime> {
-    let now = Local::now().time();
     dev_config
-        .time_bright
-        .iter()
-        .find(|it| it.time > now)
-        .or_else(|| dev_config.time_bright.first())
+        .get_next_target()
         .map(|it| it.time)
-        .ok_or_else(|| anyhow::anyhow!("not find the next wake time"))
-}
-
-fn calc_next_bright(cur_value: u32, target: u32) -> u32 {
-    // TODO: * 10 read from config
-    match (target as i32 - cur_value as i32) * 10 / 100 {
-        0 => (cur_value as i32 + if target > cur_value { 1 } else { -1 }) as u32,
-        v => cur_value + v as u32,
-    }
+        .ok_or_else(|| anyhow::anyhow!("can't find the next wake time"))
 }
