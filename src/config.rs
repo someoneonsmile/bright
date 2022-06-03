@@ -105,10 +105,9 @@ impl DeviceTransition {
     ) -> u32 {
         match *self {
             Self::Brust { interval_percent } => {
-                match (next_target_val as i32 - current_val as i32) * interval_percent as i32 / 100
-                {
+                match (pre_target_val as i32 - current_val as i32) * interval_percent as i32 / 100 {
                     0 => {
-                        (current_val as i32 + if next_target_val > current_val { 1 } else { -1 })
+                        (current_val as i32 + if pre_target_val > current_val { 1 } else { -1 })
                             as u32
                     }
                     v => (current_val as i32 + v) as u32,
