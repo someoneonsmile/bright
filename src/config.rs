@@ -19,15 +19,16 @@ pub(crate) struct DeviceConfig {
     pub transition: DeviceTransition,
     /// 调整亮度时的间隔, millis
     pub interval: u32,
+    /// 每次间隔缓动前进百分比 1-100
+    pub easing_percent: Option<u32>,
+    /// 最小移动距离
+    pub min_step: Option<u32>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = "type")]
 pub(crate) enum DeviceTransition {
-    Brust {
-        /// 每次间隔前进百分比 1-100
-        interval_percent: u32,
-    },
+    Brust,
     Line,
 }
 
@@ -56,16 +57,16 @@ impl Config {
 
 impl DeviceConfig {
     /// 计算亮度值
-    pub(crate) fn calc_next_val(&self, current_val: u32) -> Option<u32> {
+    pub(crate) fn calc_next_val(&self) -> Option<u32> {
         let pre_target = self.get_pre_target()?;
         let next_target = self.get_next_target()?;
-        Some(self.transition.calc_next_val(
+        let next_val = self.transition.calc_next_val(
             pre_target.time,
             next_target.time,
             pre_target.bright,
             next_target.bright,
-            current_val,
-        ))
+        );
+        Some(next_val)
     }
 
     pub(crate) fn get_pre_target(&self) -> Option<&DeviceTimeItem> {
@@ -86,9 +87,7 @@ impl DeviceConfig {
 
     pub(crate) fn get_target(&self) -> Option<&DeviceTimeItem> {
         match self.transition {
-            DeviceTransition::Brust {
-                interval_percent: _,
-            } => self.get_pre_target(),
+            DeviceTransition::Brust => self.get_pre_target(),
             DeviceTransition::Line => self.get_next_target(),
         }
     }
@@ -101,23 +100,19 @@ impl DeviceTransition {
         next_target_time: NaiveTime,
         pre_target_val: u32,
         next_target_val: u32,
-        current_val: u32,
     ) -> u32 {
         match *self {
-            Self::Brust { interval_percent } => {
-                match (pre_target_val as i32 - current_val as i32) * interval_percent as i32 / 100 {
-                    0 => {
-                        (current_val as i32 + if pre_target_val > current_val { 1 } else { -1 })
-                            as u32
-                    }
-                    v => (current_val as i32 + v) as u32,
-                }
-            }
             //
+            //  | --
+            //  |   |
+            //  |    --
+            //   --------
+            Self::Brust => pre_target_val,
+            //
+            //  |   /
             //  |  /
             //  | /
-            //  |________
-            //
+            //   --------
             Self::Line => {
                 let current_time = Local::now().time();
                 (pre_target_val as i32

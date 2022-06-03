@@ -30,12 +30,18 @@ time_bright = [
 # interval tick (unit ms)
 interval = 200
 
-# type = Brust, interval_percent is required.
+# easing 缓动时前进百分比, default = 100
+easing_percent = 100
+
+# 最小变动亮度, default = 1
+min_step = 1
+
+# type = Brust.
 #   fast convert to target and then sleep to next timeline point
 # type = Line.
 #   convert to target, use the time between pre timeline point and next timeline point
 
-transition = {type = "{Brust/Line}", interval_percent = 10}
+transition = {type = "{Brust/Line}"}
 ```
 
 ## Todo

@@ -66,29 +66,14 @@ async fn set_brightnes(
     loop {
         interval.tick().await;
         let target = dev_config.get_target().map(|it| it.bright);
-        // set_brightnes().await?;
         if let Some(target) = target {
             let cur_value = dev.get().await?;
             match cur_value {
                 cur_value if cur_value == target => {
-                    let next_wake_time = get_next_wake_time(dev_config)?;
-                    let mut sleep_duration =
-                        next_wake_time.signed_duration_since(Local::now().time());
-                    if sleep_duration < chrono::Duration::zero() {
-                        sleep_duration = sleep_duration + chrono::Duration::days(1);
-                    }
-                    println!("sleep: {:?}, wake at {}", sleep_duration, next_wake_time);
-                    time::sleep(sleep_duration.to_std()?).await;
+                    sleep_until_next(dev_config).await?;
                 }
                 _ => {
-                    let brightness = dev_config
-                        .calc_next_val(cur_value)
-                        .ok_or_else(|| anyhow::anyhow!("can't calc the next bright"))?;
-                    println!(
-                        "Brightness of device {}, current={}%, target={}% set={}%",
-                        dev_name, cur_value, target, brightness
-                    );
-                    dev.set(brightness).await?;
+                    easing_set(&mut dev, &dev_name, dev_config, cur_value, target).await?;
                 }
             };
         }
@@ -109,4 +94,47 @@ fn get_next_wake_time(dev_config: &DeviceConfig) -> anyhow::Result<NaiveTime> {
         .get_next_target()
         .map(|it| it.time)
         .ok_or_else(|| anyhow::anyhow!("can't find the next wake time"))
+}
+
+async fn sleep_until_next(dev_config: &DeviceConfig) -> anyhow::Result<()> {
+    let next_wake_time = get_next_wake_time(dev_config)?;
+    let mut sleep_duration = next_wake_time.signed_duration_since(Local::now().time());
+    if sleep_duration < chrono::Duration::zero() {
+        sleep_duration = sleep_duration + chrono::Duration::days(1);
+    }
+    println!("sleep: {:?}, wake at {}", sleep_duration, next_wake_time);
+    time::sleep(sleep_duration.to_std()?).await;
+    Ok(())
+}
+
+async fn easing_set(
+    dev: &mut BrightnessDevice,
+    dev_name: &str,
+    dev_config: &DeviceConfig,
+    current_val: u32,
+    target_val: u32,
+) -> anyhow::Result<()> {
+    // 根据 transition 计算亮度值
+    let set_val = dev_config
+        .calc_next_val()
+        .ok_or_else(|| anyhow::anyhow!("can't calc the next bright"))?;
+
+    // 计算缓动值
+    let easing_set_val = util::easing(
+        current_val as i32,
+        set_val as i32,
+        dev_config.easing_percent.unwrap_or(100),
+        dev_config.min_step.unwrap_or(1),
+    ) as u32;
+
+    println!(
+        "Brightness of device {}, current={}%, target={}% set={}%, easing_set={}%",
+        dev_name, current_val, target_val, set_val, easing_set_val
+    );
+
+    // 判断是否有必要调用 set
+    if current_val != easing_set_val {
+        dev.set(easing_set_val).await?;
+    }
+    Ok(())
 }
