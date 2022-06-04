@@ -15,7 +15,7 @@ pub(crate) struct Config {
 pub(crate) struct DeviceConfig {
     /// 亮度时间线
     pub time_bright: Vec<DeviceTimeItem>,
-    /// 过渡方式
+    /// 默认过渡方式
     pub transition: DeviceTransition,
     /// 调整亮度时的间隔, millis
     pub interval: u32,
@@ -28,7 +28,17 @@ pub(crate) struct DeviceConfig {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = "type")]
 pub(crate) enum DeviceTransition {
+    ///
+    ///  | --
+    ///  |   |
+    ///  |    --
+    ///   --------
     Brust,
+    ///
+    ///  |   /
+    ///  |  /
+    ///  | /
+    ///   --------
     Line,
 }
 
@@ -36,6 +46,7 @@ pub(crate) enum DeviceTransition {
 pub(crate) struct DeviceTimeItem {
     pub time: NaiveTime,
     pub bright: u32,
+    pub transition: Option<DeviceTransition>,
 }
 
 impl Config {
@@ -60,7 +71,8 @@ impl DeviceConfig {
     pub(crate) fn calc_next_val(&self) -> Option<u32> {
         let pre_target = self.get_pre_target()?;
         let next_target = self.get_next_target()?;
-        let next_val = self.transition.calc_next_val(
+        let transition = pre_target.transition.as_ref().unwrap_or(&self.transition);
+        let next_val = transition.calc_next_val(
             pre_target.time,
             next_target.time,
             pre_target.bright,
@@ -102,17 +114,7 @@ impl DeviceTransition {
         next_target_val: u32,
     ) -> u32 {
         match *self {
-            //
-            //  | --
-            //  |   |
-            //  |    --
-            //   --------
             Self::Brust => pre_target_val,
-            //
-            //  |   /
-            //  |  /
-            //  | /
-            //   --------
             Self::Line => {
                 let current_time = Local::now().time();
                 (pre_target_val as i32

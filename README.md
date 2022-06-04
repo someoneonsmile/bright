@@ -23,7 +23,8 @@
 [dev.'{device_name}']
 
 time_bright = [
-  { time = '08:00:00', bright = 30 },
+  # timeitem transition
+  { time = '08:00:00', bright = 30, transition = {type = "{Brust/Line}"}, },
   { time = '10:00:00', bright = 60 },
 ]
 
@@ -36,11 +37,11 @@ easing_percent = 100
 # 最小变动亮度, default = 1
 min_step = 1
 
+# default transition
 # type = Brust.
 #   fast convert to target and then sleep to next timeline point
 # type = Line.
 #   convert to target, use the time between pre timeline point and next timeline point
-
 transition = {type = "{Brust/Line}"}
 ```
 
