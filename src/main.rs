@@ -1,24 +1,31 @@
 use brightness::{Brightness, BrightnessDevice};
 use chrono::naive::NaiveTime;
 use chrono::Local;
+use clap::Parser;
 use config::DeviceConfig;
 use futures::{StreamExt, TryStreamExt};
 use std::collections::HashMap;
 use tokio::time::{self, MissedTickBehavior};
 
+mod cli;
 mod config;
 mod util;
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> anyhow::Result<()> {
+    let opt = cli::Opt::parse();
+
     // get device info
     let dev_map = get_dev_map().await?;
 
     // get config
-    let config_path = format!(
-        "${{XDG_CONFIG_HOME:-{}}}/bright/config.toml",
-        util::tilde("~/.config")
-    );
+    let config_path = opt
+        .config_file
+        .map(|it| it.to_string_lossy().to_string())
+        .unwrap_or(format!(
+            "${{XDG_CONFIG_HOME:-{}}}/bright/config.toml",
+            util::tilde("~/.config")
+        ));
     let config = config::Config::from_toml(&config_path)?.ok_or_else(|| {
         anyhow::anyhow!(format!("can't not find the config file {}", config_path))
     })?;
