@@ -48,4 +48,4 @@ transition = {type = "{Brust/Line}"}
 ## Todo
 
 - [x] readme config file format
-- [ ] watch the config_file change
+- [ ] watch the config_file change (notify crate)
