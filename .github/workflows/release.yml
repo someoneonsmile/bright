@@ -32,7 +32,7 @@ jobs:
       upload_url: ${{ steps.release.outputs.upload_url }}
     steps:
       - if: github.event_name == 'workflow_dispatch'
-        run: echo "release_version=${{ github.event.inputs.tag_name }}" >> $GITHUB_ENV
+        run: echo "release_version=${{ inputs.tag_name }}" >> $GITHUB_ENV
       - if: github.event_name == 'schedule'
         run: echo "release_version=nightly" >> $GITHUB_ENV
       - if: github.event_name == 'push'
