@@ -1,12 +1,14 @@
 # Bright
 
-在指定时间点调节亮度
+Adjust the brightness at the configured point in time.
+
+Individual configuration for multiple monitors.
 
 ## Features
 
-- [x] 为多个显示器单独指定亮度
-- [x] 指定时间点亮度
-- [x] 变化方式: 渐变/突变
+- [x] Individual configuration for multiple monitors
+- [x] Adjust the brightness at the configured point in time
+- [x] Transition support [Brust/Line]
 
 ## Config
 
@@ -31,10 +33,10 @@ time_bright = [
 # interval tick (unit ms)
 interval = 200
 
-# easing 缓动时前进百分比, default = 100
+# min advance percentage per adjustment, default = 100
 easing_percent = 100
 
-# 最小变动亮度, default = 1
+# min adjustment brightness, default = 1
 min_step = 1
 
 # default transition
