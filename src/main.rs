@@ -116,7 +116,7 @@ async fn set_brightnes(
 async fn show_brightnes(dev_map: &HashMap<String, BrightnessDevice>) -> anyhow::Result<()> {
     for (dev_name, dev) in dev_map.iter() {
         let value = dev.get().await?;
-        println!("Brightness of device [{}] is [{}%]", dev_name, value);
+        println!("device: [{}], brightness: [{}%]", dev_name, value);
     }
     Ok(())
 }
