@@ -4,7 +4,7 @@ use chrono::Local;
 use clap::Parser;
 use config::DeviceConfig;
 use futures::{StreamExt, TryStreamExt};
-use std::collections::HashMap;
+use std::{collections::HashMap, path::Path};
 use tokio::time::{self, MissedTickBehavior};
 
 mod cli;
@@ -15,19 +15,45 @@ mod util;
 async fn main() -> anyhow::Result<()> {
     let opt = cli::Opt::parse();
 
+    match opt.command {
+        cli::Commands::Show => {
+            show().await?;
+        }
+        cli::Commands::Run { config_file } => {
+            // get config
+            let config_path = config_file
+                .map(|it| it.to_string_lossy().to_string())
+                .unwrap_or(format!(
+                    "${{XDG_CONFIG_HOME:-{}}}/bright/config.toml",
+                    util::tilde("~/.config")
+                ));
+            run(config_path).await?;
+        }
+    }
+
+    Ok(())
+}
+
+/// for show subcommand
+async fn show() -> anyhow::Result<()> {
     // get device info
     let dev_map = get_dev_map().await?;
 
-    // get config
-    let config_path = opt
-        .config_file
-        .map(|it| it.to_string_lossy().to_string())
-        .unwrap_or(format!(
-            "${{XDG_CONFIG_HOME:-{}}}/bright/config.toml",
-            util::tilde("~/.config")
-        ));
+    // show current value for each device
+    show_brightnes(&dev_map).await?;
+
+    Ok(())
+}
+
+/// for run subcommand
+async fn run(config_path: impl AsRef<Path>) -> anyhow::Result<()> {
+    let config_path = config_path.as_ref();
+
+    // get device info
+    let dev_map = get_dev_map().await?;
+
     let config = config::Config::from_toml(&config_path)?.ok_or_else(|| {
-        anyhow::anyhow!(format!("can't not find the config file {}", config_path))
+        anyhow::anyhow!(format!("can't not find the config file {:?}", config_path))
     })?;
 
     // show current value for each device
@@ -90,7 +116,7 @@ async fn set_brightnes(
 async fn show_brightnes(dev_map: &HashMap<String, BrightnessDevice>) -> anyhow::Result<()> {
     for (dev_name, dev) in dev_map.iter() {
         let value = dev.get().await?;
-        println!("Brightness of device {} is {}%", dev_name, value);
+        println!("Brightness of device [{}] is [{}%]", dev_name, value);
     }
     Ok(())
 }

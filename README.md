@@ -4,11 +4,37 @@ Adjust the brightness at the configured point in time.
 
 Individual configuration for multiple monitors.
 
-## Features
+## Usage
 
-- [x] Individual configuration for multiple monitors
-- [x] Adjust the brightness at the configured point in time
-- [x] Transition support [Brust/Line]
+> `$ bright -h`
+
+```
+USAGE:
+    bright <SUBCOMMAND>
+
+OPTIONS:
+    -h, --help       Print help information
+    -V, --version    Print version information
+
+SUBCOMMANDS:
+    help    Print this message or the help of the given subcommand(s)
+    run     adjust brightness
+    show    show the brightness of multi monitors
+```
+
+> `$ bright run -h`
+
+```
+bright-run
+adjust brightness
+
+USAGE:
+    bright run [OPTIONS]
+
+OPTIONS:
+    -c, --config <CONFIG_FILE>    config path
+    -h, --help                    Print help information
+```
 
 ## Config
 
@@ -46,6 +72,12 @@ min_step = 1
 #   convert to target, use the time between pre timeline point and next timeline point
 transition = {type = "{Brust/Line}"}
 ```
+
+## Features
+
+- [x] Individual configuration for multiple monitors
+- [x] Adjust the brightness at the configured point in time
+- [x] Transition support [Brust/Line]
 
 ## Todo
 

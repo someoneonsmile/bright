@@ -1,12 +1,22 @@
 use std::path::PathBuf;
 
-use clap::Parser;
+use clap::{Parser, Subcommand};
 
-/// bright
 #[derive(Parser, Debug)]
 #[clap(author, version, about, name = "bright")]
-pub struct Opt {
-    /// config path
-    #[clap(short, long = "config")]
-    pub config_file: Option<PathBuf>,
+pub(crate) struct Opt {
+    #[clap(subcommand)]
+    pub command: Commands,
+}
+
+#[derive(Subcommand, Debug)]
+pub(crate) enum Commands {
+    /// show the brightness of multi monitors
+    Show,
+    /// adjust brightness
+    Run {
+        /// config path
+        #[clap(short, long = "config")]
+        config_file: Option<PathBuf>,
+    },
 }
