@@ -98,7 +98,7 @@ async fn set_brightnes(
     interval.set_missed_tick_behavior(MissedTickBehavior::Skip);
     loop {
         interval.tick().await;
-        let target = dev_config.get_target().map(|it| it.bright);
+        let target = dev_config.get_current_target().map(|it| it.bright);
         if let Some(target) = target {
             let cur_value = dev.get().await?;
             match cur_value {
