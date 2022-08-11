@@ -72,7 +72,10 @@ impl DeviceConfig {
         let pre_target = self.get_pre_target()?;
         let current_target = self.get_current_target()?;
         let next_target = self.get_next_target()?;
-        let transition = pre_target.transition.as_ref().unwrap_or(&self.transition);
+        let transition = current_target
+            .transition
+            .as_ref()
+            .unwrap_or(&self.transition);
         let next_val = transition.calc_next_val(
             current_target.time,
             next_target.time,
