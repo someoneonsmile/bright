@@ -118,7 +118,7 @@ impl DeviceTransition {
         current_target_val: u32,
     ) -> u32 {
         match *self {
-            Self::Brust => pre_target_val,
+            Self::Brust => current_target_val,
             Self::Line => {
                 let current_time = Local::now().time();
                 (pre_target_val as i32
