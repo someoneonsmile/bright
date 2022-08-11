@@ -70,18 +70,32 @@ impl DeviceConfig {
     /// 计算亮度值
     pub(crate) fn calc_next_val(&self) -> Option<u32> {
         let pre_target = self.get_pre_target()?;
+        let current_target = self.get_current_target()?;
         let next_target = self.get_next_target()?;
-        let transition = pre_target.transition.as_ref().unwrap_or(&self.transition);
+        let transition = current_target
+            .transition
+            .as_ref()
+            .unwrap_or(&self.transition);
         let next_val = transition.calc_next_val(
-            pre_target.time,
+            current_target.time,
             next_target.time,
             pre_target.bright,
-            next_target.bright,
+            current_target.bright,
         );
         Some(next_val)
     }
 
     pub(crate) fn get_pre_target(&self) -> Option<&DeviceTimeItem> {
+        let now = Local::now().time();
+        self.time_bright
+            .iter()
+            .filter(|it| it.time < now)
+            .rev()
+            .chain(self.time_bright.iter().rev().cycle())
+            .nth(1)
+    }
+
+    pub(crate) fn get_current_target(&self) -> Option<&DeviceTimeItem> {
         let now = Local::now().time();
         self.time_bright
             .iter()
@@ -96,31 +110,24 @@ impl DeviceConfig {
             .find(|it| it.time > now)
             .or_else(|| self.time_bright.first())
     }
-
-    pub(crate) fn get_target(&self) -> Option<&DeviceTimeItem> {
-        match self.transition {
-            DeviceTransition::Brust => self.get_pre_target(),
-            DeviceTransition::Line => self.get_next_target(),
-        }
-    }
 }
 
 impl DeviceTransition {
     fn calc_next_val(
         &self,
-        pre_target_time: NaiveTime,
+        current_target_time: NaiveTime,
         next_target_time: NaiveTime,
         pre_target_val: u32,
-        next_target_val: u32,
+        current_target_val: u32,
     ) -> u32 {
         match *self {
-            Self::Brust => pre_target_val,
+            Self::Brust => current_target_val,
             Self::Line => {
                 let current_time = Local::now().time();
                 (pre_target_val as i32
-                    + (next_target_val as i32 - pre_target_val as i32)
-                        * duration_millisec(pre_target_time, current_time)
-                        / duration_millisec(pre_target_time, next_target_time))
+                    + (current_target_val as i32 - pre_target_val as i32)
+                        * duration_millisec(current_target_time, current_time)
+                        / duration_millisec(current_target_time, next_target_time))
                     as u32
             }
         }
