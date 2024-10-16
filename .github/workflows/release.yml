@@ -172,7 +172,7 @@ jobs:
           fi
 
       - name: create nightly release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         if: env.tag_name == 'nightly'
         with:
           generate_release_notes: true
@@ -186,7 +186,7 @@ jobs:
             ${{ env.ASSET }}.sha256sum
 
       - name: create stable release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         if: env.tag_name != 'nightly'
         with:
           generate_release_notes: true
