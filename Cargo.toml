@@ -23,7 +23,7 @@ toml = "0"
 
 shellexpand = "3"
 
-clap = {version = "3", features = ["derive"]}
+clap = {version = "4", features = ["derive"]}
 
 # lazy_static = {version = "1"}
 
