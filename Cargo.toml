@@ -21,7 +21,7 @@ serde = {version = "1", features = ["derive"] }
 
 toml = "0"
 
-shellexpand = "2"
+shellexpand = "3"
 
 clap = {version = "3", features = ["derive"]}
 
